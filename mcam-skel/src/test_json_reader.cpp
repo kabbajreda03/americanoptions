@@ -1,31 +1,42 @@
+#include "ConfigParser.hpp"
 #include <iostream>
-#include <fstream>
-#include "json_helper.hpp"
-
+#include <pnl/pnl_vector.h>
+#include <pnl/pnl_matrix.h>
+#include <nlohmann/json.hpp>
 
 int main(int argc, char **argv) {
+    // Ensure the correct number of arguments
     if (argc != 2) {
-        std::cerr << "Wrong number of arguments. Exactly one argument is required" << std::endl;
-        std::exit(0);
-    }
-    std::ifstream ifs(argv[1]);
-    nlohmann::json j = nlohmann::json::parse(ifs);
-    int size;
-    std::string option_type;
-    PnlVect *volatility;
-    option_type = j.at("option type").get<std::string>();
-    j.at("option size").get_to(size);
-    j.at("volatility").get_to(volatility);
-    if (volatility->size == 1 && size > 1) {
-        pnl_vect_resize_from_scalar(volatility, size, GET(volatility, 0));
+        std::cerr << "Usage: " << argv[0] << " <path to JSON file>" << std::endl;
+        return 1;
     }
 
-    nlohmann::json jout = {
-        {"option size", size},
-        {"option type", option_type},
-        {"volatility", volatility}
-    };
-    std::cout << std::setw(4)<< jout << std::endl;
-    pnl_vect_free(&volatility);
-    exit(0);
+    // Create ConfigParser instance and parse the JSON file
+    ConfigParser config(argv[1]);
+
+    // Display parsed data
+    std::cout << "Option Type: " << config.optionType << std::endl;
+    std::cout << "Model Size: " << config.modelSize << std::endl;
+    std::cout << "Strike: " << config.strike << std::endl;
+    std::cout << "Maturity: " << config.maturity << std::endl;
+    std::cout << "Interest Rate: " << config.interestRate << std::endl;
+    std::cout << "Correlation: " << config.correlation << std::endl;
+    std::cout << "MC Iterations: " << config.sampleNumber << std::endl;
+    std::cout << "Dates: " << config.nbDates << std::endl;
+    std::cout << "Degree for Polynomial Regression: " << config.regressionDegree << std::endl;
+
+    // Print vectors and matrix
+    std::cout << "Volatility: ";
+    pnl_vect_print(config.volatility);
+
+    std::cout << "Spot: ";
+    pnl_vect_print(config.spots);
+
+    std::cout << "Payoff Coefficients: ";
+    pnl_vect_print(config.payoffCoeffs);
+
+    std::cout << "Dividend rate: " << std::endl;
+    pnl_vect_print(config.dividendRate);
+
+    return 0;
 }
