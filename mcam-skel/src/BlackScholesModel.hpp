@@ -14,7 +14,9 @@ public:
     PnlVect *sigma_; /// vecteur de volatilités
     PnlVect *divid; /// vecteur des dividendes
     PnlVect *spot_; /// valeurs initiales des sous-jacents
+    PnlMat *L_;
 
+    BlackScholesModel(int size, double r, double rho, PnlVect* sigma, PnlVect* dividend, PnlVect* spot);
     /**
      * Génère une trajectoire du modèle et la stocke dans path
      *
@@ -29,4 +31,5 @@ public:
      * Calcule l'actualisation à la date t
      */
     double discount(double t);
+    ~BlackScholesModel();
 };

@@ -3,6 +3,11 @@
 #include <pnl/pnl_vector.h>
 #include <pnl/pnl_matrix.h>
 #include <nlohmann/json.hpp>
+#include "BlackScholesModel.hpp"
+#include "MonteCarlo.hpp"
+#include "BasketOption.hpp"
+#include "GeometricOption.hpp"
+#include "PerformanceOption.hpp"
 
 int main(int argc, char **argv) {
     // Ensure the correct number of arguments
@@ -32,11 +37,31 @@ int main(int argc, char **argv) {
     std::cout << "Spot: ";
     pnl_vect_print(config.spots);
 
-    std::cout << "Payoff Coefficients: ";
-    pnl_vect_print(config.payoffCoeffs);
+    // std::cout << "Payoff Coefficients: ";
+    // pnl_vect_print(config.payoffCoeffs);
 
     std::cout << "Dividend rate: " << std::endl;
     pnl_vect_print(config.dividendRate);
+
+    PnlRng* rng = pnl_rng_create(PNL_RNG_MERSENNE);
+    pnl_rng_sseed(rng, time(NULL));
+
+    BlackScholesModel* bs = new BlackScholesModel(config.modelSize, config.interestRate, config.correlation, config.volatility,
+    config.dividendRate, config.spots);
+
+    PnlMat* path = pnl_mat_create(config.nbDates + 1, config.modelSize);
+    bs->asset(path, config.maturity, config.nbDates, rng);
+    
+    BasketOption* bo = new BasketOption(config.maturity, config.nbDates, config.modelSize, config.strike, config.payoffCoeffs);
+    //GeometricOption* go = new GeometricOption(config.maturity, config.nbDates, config.modelSize, config.strike);
+    //PerformanceOption* po = new PerformanceOption(config.maturity, config.nbDates, config.modelSize, config.strike, config.payoffCoeffs);
+    MonteCarlo* mc = new MonteCarlo(bs, bo, rng, config.sampleNumber, config.regressionDegree);
+    double prix = mc->price();
+    std::cout << prix << std::endl;
+
+    // double prix2 = mc->price2();
+    // std::cout << prix2 << std::endl;
+
 
     return 0;
 }

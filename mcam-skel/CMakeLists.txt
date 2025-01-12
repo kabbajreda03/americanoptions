@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.22.1)
 project(mcam CXX)
 
 # Prefix
@@ -44,7 +44,9 @@ set(LIBS ${LIBS} nlohmann_json::nlohmann_json)
 ### Ne rien modifier dans la partie au dessus de cette ligne.
 
 # Test the parser
-add_executable(test-json-reader src/test_json_reader.cpp src/json_helper.cpp)
+add_executable(test-json-reader src/test_json_reader.cpp src/json_helper.cpp src/ConfigParser.cpp
+src/BlackScholesModel.cpp src/BasketOption.cpp src/GeometricOption.cpp src/PerformanceOption.cpp 
+src/MonteCarlo.cpp)
 target_link_libraries(test-json-reader ${LIBS})
 
 # Print compiler flags
